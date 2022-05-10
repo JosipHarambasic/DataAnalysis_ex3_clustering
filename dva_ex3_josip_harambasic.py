@@ -187,5 +187,6 @@ lt = row(column(select_init,slider_k,div),plot1,plot2)
 curdoc().add_root(lt)
 curdoc().title = "DVA_ex_3"
 
+
 # Run it with
 # bokeh serve --show dva_ex3_yourname.py

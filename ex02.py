@@ -202,7 +202,7 @@ source_umap = ColumnDataSource(data = dict(
 # Connect it to the on_update_umap callback in the same fashion as the previous slider
 
 # You can use the command below in the folder of your python file to start a bokeh directory app.
-# Be aware that your python file must be named main.py and that your images have to be in a subfolder name "static"
+# Be aware that your python file must be named test.py and that your images have to be in a subfolder name "static"
 
 # bokeh serve --show .
 # python -m bokeh serve --show .
