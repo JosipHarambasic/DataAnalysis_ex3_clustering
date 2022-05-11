@@ -36,7 +36,7 @@ def get_closest(data_point: np.ndarray, centroids: np.ndarray):
     return index_min
 
 
-def to_classes(clustering):
+def groupToClass(clustering):
     # Get number of samples (you can pass it directly to the function)
     num_samples = sum(x.shape[0] for x in clustering)
     indices = np.empty((num_samples,))  # An empty array with correct size
@@ -46,7 +46,7 @@ def to_classes(clustering):
     return indices.astype(int)
 
 
-def k_means(data_np: np.ndarray, k: int = 3, n_iter: int = 500, random_initialization=False) -> Tuple[np.ndarray, int]:
+def k_means(data: np.ndarray, k: int = 3, n_iter: int = 500, random_initialization=False) -> Tuple[np.ndarray, int]:
     """
     :param data: your data, a numpy array with shape (n_entries, n_features)
     :param k: The number of clusters to compute
@@ -58,11 +58,11 @@ def k_means(data_np: np.ndarray, k: int = 3, n_iter: int = 500, random_initializ
     """
     # Initialize the algorithm by assigning random cluster labels to each entry in your dataset
     k = k + 1
-    centroids = data_np[random.sample(range(len(data_np)), k)]
-    labels = np.array([np.argmin([(el - c) ** 2 for c in centroids]) for el in data_np])
+    centroids = data[random.sample(range(len(data)), k)]
+    labels = np.array([np.argmin([(el - c) ** 2 for c in centroids]) for el in data])
     clustering = []
     for k in range(k):
-        clustering.append(data_np[labels == k])
+        clustering.append(data[labels == k])
 
     # Implement K-Means with a while loop, which terminates either if the centroids don't move anymore, or
     # if the number of iterations exceeds n_iter
@@ -74,7 +74,7 @@ def k_means(data_np: np.ndarray, k: int = 3, n_iter: int = 500, random_initializ
             centroids = DEFAULT_CENTROIDS[random.sample(range(len(DEFAULT_CENTROIDS)), k)]
 
         # Update the cluster labels using get_closest
-        labels = np.array([get_closest(el, centroids) for el in data_np])
+        labels = np.array([get_closest(el, centroids) for el in data])
         clustering = []
         for i in range(k):
             clustering.append(np.where(labels == i)[0])
@@ -93,10 +93,8 @@ def k_means(data_np: np.ndarray, k: int = 3, n_iter: int = 500, random_initializ
             break
         else:
             centroids = new_centroids
-        pass
 
-    # return the final cluster labels and the number of iterations it took
-    clustering = to_classes(clustering)
+    clustering = groupToClass(clustering)
     return clustering, counter
 
 
@@ -104,16 +102,15 @@ def callback(attr, old, new):
     # recompute the clustering and update the colors of the data points based on the result
     k = slider_k.value_throttled
     init = select_init.value
-    clustering_new, counter_new = k_means(data_np, k, 500, init)
+    new_cluster, counter_new = k_means(data_np, k, 500, init)
 
-    source.data['clustering'] = clustering_new.astype(str)
-    mapper = factor_cmap('clustering', palette=Spectral10, factors=np.unique(clustering_new).astype(str))
-    scatter1.glyph.fill_color = mapper
-    scatter2.glyph.fill_color = mapper
-    scatter1.glyph.line_color = mapper
-    scatter2.glyph.line_color = mapper
+    source.data['clustering'] = new_cluster.astype(str)
+    mapper = factor_cmap('clustering', palette=Spectral10, factors=np.unique(new_cluster).astype(str))
+    scatter_plot1.glyph.fill_color = mapper
+    scatter_plot1.glyph.line_color = mapper
+    scatter_plot2.glyph.fill_color = mapper
+    scatter_plot2.glyph.line_color = mapper
     div.text = 'Number of iterations: %d' % (counter_new)
-    pass
 
 
 # read and store the dataset
@@ -147,29 +144,31 @@ source = ColumnDataSource(dict(petal_length=data['petal_length'],
 # https://docs.bokeh.org/en/latest/docs/user_guide/categorical.html#filling
 mapper = factor_cmap('clustering',palette=Spectral10,factors=np.unique(clustering).astype(str))
 
-plot1 = figure(title='Scatterplot of flowers distribution by petal length and sepal length')
-plot1.yaxis.axis_label = 'Sepal length'
-plot1.xaxis.axis_label = 'Petal length'
-scatter1 = plot1.scatter(x='petal_length',
-                         y='sepal_length',
-                         fill_alpha=0.4,
-                         source=source,
-                         fill_color=mapper,
-                         line_color=mapper)
+p1 = figure(title='Scatterplot of flowers distribution by petal length and sepal length')
+p1.yaxis.axis_label = 'Sepal length'
+p1.xaxis.axis_label = 'Petal length'
+scatter_plot1 = p1.scatter(x='petal_length',
+                           y='sepal_length',
+                           fill_alpha=0.4,
+                           size=10,
+                           source=source,
+                           fill_color=mapper,
+                           line_color=mapper)
 
-plot2 = figure(title='Scatterplot of flowers distribution by petal width and petal length')
-plot2.yaxis.axis_label = 'Petal length'
-plot2.xaxis.axis_label = 'Petal width'
-scatter2 = plot2.scatter(x='petal_width',
-                         y='petal_length',
-                         fill_alpha=0.4,
-                         source=source,
-                         fill_color=mapper,
-                         line_color=mapper)
+p2 = figure(title='Scatterplot of flowers distribution by petal width and petal length')
+p2.yaxis.axis_label = 'Petal length'
+p2.xaxis.axis_label = 'Petal width'
+scatter_plot2 = p2.scatter(x='petal_width',
+                           y='petal_length',
+                           fill_alpha=0.4,
+                           source=source,
+                           size=10,
+                           fill_color=mapper,
+                           line_color=mapper)
 # 5. A Div displaying the currently number of iterations it took the algorithm to update the plot.
 div = Div(text='Number of iterations: %d' % (counter))
 div.on_change('text', callback)
 
-lt = row(column(select_init, slider_k, div), plot1, plot2)
+lt = row(column(select_init, slider_k, div), p1, p2)
 
 curdoc().add_root(lt)
