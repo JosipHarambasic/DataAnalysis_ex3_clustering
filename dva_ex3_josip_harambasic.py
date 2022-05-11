@@ -63,7 +63,7 @@ def k_means(data: np.ndarray, k: int = 3, n_iter: int = 500, random_initializati
         if random_initialization is False and counter == 0:
             centroids = DEFAULT_CENTROIDS[random.sample(range(len(DEFAULT_CENTROIDS)), k)]
 
-        # Update the cluster labels using get_closest
+        # Update the clusters
         labels = np.array([get_closest(el, centroids) for el in data])
         clustering = []
         for i in range(k):
@@ -78,7 +78,7 @@ def k_means(data: np.ndarray, k: int = 3, n_iter: int = 500, random_initializati
             else:
                 new_centroids[i] = centroids[i]
 
-        # if the centroids didn't move, exit the while loop
+        # exit the while loop, if the centroids didn't move
         if clustering is not None and (centroids != new_centroids).sum() == 0:
             break
         else:
