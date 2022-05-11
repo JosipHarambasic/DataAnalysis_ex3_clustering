@@ -22,6 +22,7 @@ DEFAULT_CENTROIDS = np.array([[5.664705882352942, 3.0352941176470587, 3.33529411
                               [5.52857142857143, 3.142857142857143, 3.107142857142857, 1.007142857142857],
                               [5.828571428571429, 2.9357142857142855, 3.664285714285714, 1.1]])
 
+
 def get_closest(data_point: np.ndarray, centroids: np.ndarray):
     """
     Takes a data_point and a nd.array of multiple centroids and returns the index of the centroid closest to data_point
@@ -33,6 +34,7 @@ def get_closest(data_point: np.ndarray, centroids: np.ndarray):
         dist[i] = np.linalg.norm(c - data_point)
     index_min = np.argmin(dist)
     return index_min
+
 
 def to_classes(clustering):
     # Get number of samples (you can pass it directly to the function)
@@ -113,34 +115,33 @@ def callback(attr, old, new):
     div.text = 'Number of iterations: %d' % (counter_new)
     pass
 
+
 # read and store the dataset
 data: pd.DataFrame = flowers.copy(deep=True)
 data = data.drop(['species'], axis=1)
 
 # Create a copy of the data as numpy array, which you can use for computing the clustering
 data_np = np.asarray(data)
-
 # Create the dashboard
 # 1. A Select widget to choose between random initialization or using the DEFAULT_CENTROIDS on top
-select_init = Select(title='Random Centroids',value='False',options=['True','False'])
-
+select_init = Select(title='Random Centroids', value='False', options=['True', 'False'])
 # 2. A Slider to choose a k between 2 and 10 (k being the number of clusters)
-slider_k = Slider(start=2,end=10,value=3,step=1,title='k')
-
+slider_k = Slider(start=2, end=10, value=3, step=1, title='k')
 # 4. Connect both widgets to the callback
-select_init.on_change('value',callback)
-slider_k.on_change('value_throttled',callback)
-
+select_init.on_change('value', callback)
+slider_k.on_change('value_throttled', callback)
 # 3. A ColumnDataSource to hold the data and the color of each point you need
-clustering, counter = k_means(data_np,4,500,False)
-source = ColumnDataSource(dict(petal_length=data['petal_length'],sepal_length=data['sepal_length'],petal_width=data['petal_width'],clustering=clustering))
-
+clustering, counter = k_means(data_np, 3, 500, False)
+source = ColumnDataSource(dict(petal_length=data['petal_length'],
+                               sepal_length=data['sepal_length'],
+                               petal_width=data['petal_width'],
+                               clustering=clustering.astype(str)))
 # 4. Two plots displaying the dataset based on the following table, have a look at the images
 # in the handout if this confuses you.
 #
-#       Axis/Plot	Plot1 	Plot2
-#       X	Petal length 	Petal width
-#       Y	Sepal length	Petal length
+#       Axis/Plot   Plot1   Plot2
+#       X   Petal length    Petal width
+#       Y   Sepal length    Petal length
 #
 # Use a categorical color mapping, such as Spectral10, have a look at this section of the bokeh docs:
 # https://docs.bokeh.org/en/latest/docs/user_guide/categorical.html#filling
@@ -166,9 +167,9 @@ scatter2 = plot2.scatter(x='petal_width',
                          fill_color=mapper,
                          line_color=mapper)
 # 5. A Div displaying the currently number of iterations it took the algorithm to update the plot.
-div = Div(text='Number of iterations: ')
+div = Div(text='Number of iterations: %d' % (counter))
+div.on_change('text', callback)
 
-lt = row(column(select_init,slider_k,div),plot1,plot2)
+lt = row(column(select_init, slider_k, div), plot1, plot2)
 
 curdoc().add_root(lt)
-curdoc().title = "DVA_ex_3"
