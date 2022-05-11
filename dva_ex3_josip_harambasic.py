@@ -10,7 +10,7 @@ from bokeh.layouts import column, row
 from bokeh.palettes import Spectral10
 from bokeh.transform import factor_cmap
 
-# Use these centroids in the first iteration of you algorithm if "Random Centroids" is set to False in the Dashboard
+# Use these centroids in the first iteration of your algorithm if "Random Centroids" is set to False in the Dashboard
 DEFAULT_CENTROIDS = np.array([[5.664705882352942, 3.0352941176470587, 3.3352941176470585, 1.0176470588235293],
                               [5.446153846153847, 3.2538461538461543, 2.9538461538461536, 0.8846153846153846],
                               [5.906666666666667, 2.933333333333333, 4.1000000000000005, 1.3866666666666667],
@@ -104,7 +104,7 @@ def callback(attr, old, new):
     scatter_plot1.glyph.line_color = mapper
     scatter_plot2.glyph.fill_color = mapper
     scatter_plot2.glyph.line_color = mapper
-    div.text = 'Number of iterations: %d' % (counter_new)
+    div.text = 'Number of iterations: {}'.format(counter_new)
 
 
 # read and store the dataset
@@ -138,7 +138,7 @@ source = ColumnDataSource(dict(petal_length=data['petal_length'],
 # https://docs.bokeh.org/en/latest/docs/user_guide/categorical.html#filling
 mapper = factor_cmap('clustering',palette=Spectral10,factors=np.unique(clustering).astype(str))
 
-p1 = figure(title='Scatterplot of flowers distribution by petal length and sepal length')
+p1 = figure(title='Scatterplot of flowers distribution by petal length and sepal length', width=500, height=500)
 p1.yaxis.axis_label = 'Sepal length'
 p1.xaxis.axis_label = 'Petal length'
 scatter_plot1 = p1.scatter(x='petal_length',
@@ -149,7 +149,7 @@ scatter_plot1 = p1.scatter(x='petal_length',
                            fill_color=mapper,
                            line_color=mapper)
 
-p2 = figure(title='Scatterplot of flowers distribution by petal width and petal length')
+p2 = figure(title='Scatterplot of flowers distribution by petal width and petal length', width=500, height=500)
 p2.yaxis.axis_label = 'Petal length'
 p2.xaxis.axis_label = 'Petal width'
 scatter_plot2 = p2.scatter(x='petal_width',
@@ -160,7 +160,7 @@ scatter_plot2 = p2.scatter(x='petal_width',
                            fill_color=mapper,
                            line_color=mapper)
 # 5. A Div displaying the currently number of iterations it took the algorithm to update the plot.
-div = Div(text='Number of iterations: %d' % (counter))
+div = Div(text='Number of iterations: {}'.format(counter))
 div.on_change('text', callback)
 
 lt = row(column(dropdown, slider, div), p1, p2)
