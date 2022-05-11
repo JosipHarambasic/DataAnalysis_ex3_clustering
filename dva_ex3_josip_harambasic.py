@@ -36,16 +36,6 @@ def get_closest(data_point: np.ndarray, centroids: np.ndarray):
     return index_min
 
 
-def groupToClass(clustering):
-    # Get number of samples (you can pass it directly to the function)
-    num_samples = sum(x.shape[0] for x in clustering)
-    indices = np.empty((num_samples,))  # An empty array with correct size
-    for ith, cluster in enumerate(clustering):
-        # use cluster indices to assign to correct the cluster index
-        indices[cluster] = ith
-    return indices.astype(int)
-
-
 def k_means(data: np.ndarray, k: int = 3, n_iter: int = 500, random_initialization=False) -> Tuple[np.ndarray, int]:
     """
     :param data: your data, a numpy array with shape (n_entries, n_features)
@@ -94,14 +84,18 @@ def k_means(data: np.ndarray, k: int = 3, n_iter: int = 500, random_initializati
         else:
             centroids = new_centroids
 
-    clustering = groupToClass(clustering)
-    return clustering, counter
+    num_samples = sum(x.shape[0] for x in clustering)
+    indices = np.empty((num_samples,))  # An empty array with correct size
+    for i, c in enumerate(clustering):
+        # use cluster indices to assign to correct the cluster index
+        indices[c] = i
+    return indices.astype(int), counter
 
 
 def callback(attr, old, new):
     # recompute the clustering and update the colors of the data points based on the result
-    k = slider_k.value_throttled
-    init = select_init.value
+    k = slider.value_throttled
+    init = dropdown.value
     new_cluster, counter_new = k_means(data_np, k, 500, init)
 
     source.data['clustering'] = new_cluster.astype(str)
@@ -121,12 +115,12 @@ data = data.drop(['species'], axis=1)
 data_np = np.asarray(data)
 # Create the dashboard
 # 1. A Select widget to choose between random initialization or using the DEFAULT_CENTROIDS on top
-select_init = Select(title='Random Centroids', value='False', options=['True', 'False'])
+dropdown = Select(title='Random Centroids', value='False', options=['True', 'False'])
 # 2. A Slider to choose a k between 2 and 10 (k being the number of clusters)
-slider_k = Slider(start=2, end=10, value=3, step=1, title='k')
+slider = Slider(start=2, end=10, value=3, step=1, title='k')
 # 4. Connect both widgets to the callback
-select_init.on_change('value', callback)
-slider_k.on_change('value_throttled', callback)
+dropdown.on_change('value', callback)
+slider.on_change('value_throttled', callback)
 # 3. A ColumnDataSource to hold the data and the color of each point you need
 clustering, counter = k_means(data_np, 3, 500, False)
 source = ColumnDataSource(dict(petal_length=data['petal_length'],
@@ -169,6 +163,6 @@ scatter_plot2 = p2.scatter(x='petal_width',
 div = Div(text='Number of iterations: %d' % (counter))
 div.on_change('text', callback)
 
-lt = row(column(select_init, slider_k, div), p1, p2)
+lt = row(column(dropdown, slider, div), p1, p2)
 
 curdoc().add_root(lt)
