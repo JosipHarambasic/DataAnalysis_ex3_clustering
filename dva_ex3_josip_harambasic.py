@@ -138,7 +138,7 @@ source = ColumnDataSource(dict(petal_length=data['petal_length'],
 # https://docs.bokeh.org/en/latest/docs/user_guide/categorical.html#filling
 mapper = factor_cmap('clustering',palette=Spectral10,factors=np.unique(clustering).astype(str))
 
-p1 = figure(title='Scatterplot of flowers distribution by petal length and sepal length', width=500, height=500)
+p1 = figure(title='Scatterplot of flowers distribution by Petal length and Sepal length', width=500, height=500)
 p1.yaxis.axis_label = 'Sepal length'
 p1.xaxis.axis_label = 'Petal length'
 scatter_plot1 = p1.scatter(x='petal_length',
@@ -149,7 +149,7 @@ scatter_plot1 = p1.scatter(x='petal_length',
                            fill_color=mapper,
                            line_color=mapper)
 
-p2 = figure(title='Scatterplot of flowers distribution by petal width and petal length', width=500, height=500)
+p2 = figure(title='Scatterplot of flowers distribution by Petal width and Petal length', width=500, height=500)
 p2.yaxis.axis_label = 'Petal length'
 p2.xaxis.axis_label = 'Petal width'
 scatter_plot2 = p2.scatter(x='petal_width',
